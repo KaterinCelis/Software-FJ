@@ -1,66 +1,71 @@
-"""Gestor en memoria (listas internas, sin base de datos)."""
+# Gestor: guarda todo en listas (no usamos base de datos)
 from entidades import Cliente
 from reserva import Reserva
 from excepciones import ErrorSoftwareFJ, ClienteInvalidoError
-from logger import logger
+import logger
 
 
 class Gestor:
     def __init__(self):
-        self._clientes, self._servicios, self._reservas = [], [], []
+        self.clientes = []
+        self.servicios = []
+        self.reservas = []
 
-    def registrar_cliente(self, **datos):
+    def registrar_cliente(self, nombre, documento, email, telefono):
         try:
-            c = Cliente(**datos)
-            if any(x.documento == c.documento for x in self._clientes):
-                raise ClienteInvalidoError("Documento ya registrado")
-        except (ErrorSoftwareFJ, TypeError) as e:
-            logger.error(f"Registro de cliente fallido: {e!r}")
-            print(f"  [ERROR] Cliente: {e}")
+            cliente = Cliente(nombre, documento, email, telefono)
+            # revisar que el documento no este repetido
+            for c in self.clientes:
+                if c.get_documento() == cliente.get_documento():
+                    raise ClienteInvalidoError("Documento ya registrado")
+        except ErrorSoftwareFJ as e:
+            logger.error("Registro de cliente fallido: " + str(e))
+            print("  [ERROR] Cliente: " + str(e))
             return None
         else:
-            self._clientes.append(c)
-            logger.info(f"Cliente registrado: {c.describir()}")
-            print(f"  [OK] {c.describir()}")
-            return c
+            self.clientes.append(cliente)
+            logger.info("Cliente registrado: " + cliente.describir())
+            print("  [OK] " + cliente.describir())
+            return cliente
 
-    def registrar_servicio(self, clase, *args, **kwargs):
+    def registrar_servicio(self, clase, *datos):
         try:
-            s = clase(*args, **kwargs)
-        except (ErrorSoftwareFJ, TypeError) as e:
-            logger.error(f"Creación de servicio fallida: {e!r}")
-            print(f"  [ERROR] Servicio: {e}")
+            servicio = clase(*datos)
+        except ErrorSoftwareFJ as e:
+            logger.error("Creacion de servicio fallida: " + str(e))
+            print("  [ERROR] Servicio: " + str(e))
             return None
         else:
-            self._servicios.append(s)
-            logger.info(f"Servicio creado: {s.describir()}")
-            print(f"  [OK] {s.describir()}")
-            return s
+            self.servicios.append(servicio)
+            logger.info("Servicio creado: " + servicio.describir())
+            print("  [OK] " + servicio.describir())
+            return servicio
 
-    def crear_reserva(self, cliente, servicio, horas, confirmar=True):
+    def crear_reserva(self, cliente, servicio, horas):
         try:
-            if servicio is None or cliente is None:
+            if cliente is None or servicio is None:
                 raise ErrorSoftwareFJ("Cliente o servicio inexistente")
             servicio.validar_parametros(horas)
-            r = Reserva(cliente, servicio, horas)
-            if confirmar:
-                r.confirmar()
-            self._reservas.append(r)
+            reserva = Reserva(cliente, servicio, horas)
+            reserva.confirmar()
+            self.reservas.append(reserva)
         except ErrorSoftwareFJ as e:
-            causa = f" (causa: {e.__cause__})" if e.__cause__ else ""
-            logger.error(f"Reserva fallida: {e!r}{causa}")
-            print(f"  [ERROR] Reserva: {e}{causa}")
+            mensaje = str(e)
+            if e.__cause__ is not None:
+                mensaje = mensaje + " (causa: " + str(e.__cause__) + ")"
+            logger.error("Reserva fallida: " + mensaje)
+            print("  [ERROR] Reserva: " + mensaje)
             return None
         else:
-            print(f"  [OK] {r.describir()}")
-            return r
+            print("  [OK] " + reserva.describir())
+            return reserva
         finally:
-            logger.info("Operación de reserva procesada")
+            logger.info("Se proceso un intento de reserva")
 
     def cancelar_reserva(self, reserva):
         try:
             reserva.cancelar()
-            print(f"  [OK] {reserva.describir()}")
-        except (ErrorSoftwareFJ, AttributeError) as e:
-            logger.error(f"Cancelación fallida: {e!r}")
-            print(f"  [ERROR] Cancelación: {e}")
+            print("  [OK] " + reserva.describir())
+        except ErrorSoftwareFJ as e:
+            logger.error("Cancelacion fallida: " + str(e))
+            print("  [ERROR] Cancelacion: " + str(e))

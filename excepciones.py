@@ -1,29 +1,23 @@
-"""Excepciones personalizadas de Software FJ."""
-
+# Excepciones personalizadas del sistema
 
 class ErrorSoftwareFJ(Exception):
-    """Excepción base del sistema."""
-
+    # Esta es la excepcion "padre" de todas las demas
+    pass
 
 class ClienteInvalidoError(ErrorSoftwareFJ):
-    """Datos de cliente inválidos."""
-
+    pass
 
 class ParametroFaltanteError(ErrorSoftwareFJ):
-    """Falta un parámetro obligatorio."""
-
+    pass
 
 class ServicioNoDisponibleError(ErrorSoftwareFJ):
-    """El servicio no está disponible."""
-
+    pass
 
 class OperacionNoPermitidaError(ErrorSoftwareFJ):
-    """Operación no permitida por el estado actual."""
-
+    pass
 
 class ReservaInvalidaError(ErrorSoftwareFJ):
-    """La reserva no se pudo crear o procesar."""
-
+    pass
 
 class CalculoInconsistenteError(ErrorSoftwareFJ):
-    """Un cálculo dio un resultado inconsistente."""
+    pass

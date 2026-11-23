@@ -1,13 +1,28 @@
-"""Registro de eventos y errores en archivo (único uso permitido de archivos)."""
-import logging
+# Aqui se guardan los eventos y errores en un archivo de texto
 import os
+from datetime import datetime
 
-RUTA_LOG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs", "eventos.log")
-os.makedirs(os.path.dirname(RUTA_LOG), exist_ok=True)
+RUTA_LOG = "logs/eventos.log"
 
-logger = logging.getLogger("software_fj")
-logger.setLevel(logging.INFO)
-if not logger.handlers:
-    _h = logging.FileHandler(RUTA_LOG, mode="w", encoding="utf-8")
-    _h.setFormatter(logging.Formatter("%(asctime)s | %(levelname)s | %(message)s"))
-    logger.addHandler(_h)
+# Si la carpeta logs no existe, la creamos
+if not os.path.exists("logs"):
+    os.makedirs("logs")
+
+
+def limpiar_log():
+    archivo = open(RUTA_LOG, "w", encoding="utf-8")
+    archivo.close()
+
+
+def registrar(nivel, mensaje):
+    archivo = open(RUTA_LOG, "a", encoding="utf-8")
+    archivo.write(str(datetime.now()) + " | " + nivel + " | " + mensaje + "\n")
+    archivo.close()
+
+
+def info(mensaje):
+    registrar("INFO", mensaje)
+
+
+def error(mensaje):
+    registrar("ERROR", mensaje)

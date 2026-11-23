@@ -1,47 +1,45 @@
-"""Simulación de 12 operaciones. El sistema nunca se detiene por errores."""
+# Programa principal: simula 12 operaciones (con y sin errores)
 from gestor import Gestor
 from servicios import ReservaSala, AlquilerEquipo, AsesoriaEspecializada
-from logger import logger, RUTA_LOG
+import logger
 
 
 def main():
-    g = Gestor()
-    logger.info("=== Inicio de la simulación ===")
+    logger.limpiar_log()
+    gestor = Gestor()
+    logger.info("=== Inicio de la simulacion ===")
 
     print("\n1-4) Clientes")
-    ana = g.registrar_cliente(nombre="Ana Pérez", documento="1052345678",
-                              email="ana@mail.com", telefono="3101234567")
-    luis = g.registrar_cliente(nombre="Luis Gómez", documento="79876543",
-                               email="luis@mail.com", telefono="3209876543")
-    g.registrar_cliente(nombre="Al", documento="123", email="malcorreo", telefono="1")  # inválido
-    g.registrar_cliente(nombre="Ana Dup", documento="1052345678",
-                        email="dup@mail.com", telefono="3001112233")                   # duplicado
+    ana = gestor.registrar_cliente("Ana Perez", "1052345678", "ana@mail.com", "3101234567")
+    luis = gestor.registrar_cliente("Luis Gomez", "79876543", "luis@mail.com", "3209876543")
+    gestor.registrar_cliente("Al", "123", "malcorreo", "1")                       # datos invalidos
+    gestor.registrar_cliente("Ana Dup", "1052345678", "dup@mail.com", "3001112233")  # documento repetido
 
     print("\n5-7) Servicios")
-    sala = g.registrar_servicio(ReservaSala, "Sala Innovación", 50000, 25)
-    equipo = g.registrar_servicio(AlquilerEquipo, "Videobeam", 20000, 2)
-    asesoria = g.registrar_servicio(AsesoriaEspecializada, "Asesoría Cloud", 80000, "senior")
-    g.registrar_servicio(AsesoriaEspecializada, "Asesoría X", 80000, "dios")           # inválido
-    g.registrar_servicio(ReservaSala, "Sala rota", -5, 10)                             # inválido
+    sala = gestor.registrar_servicio(ReservaSala, "Sala Innovacion", 50000, 25)
+    equipo = gestor.registrar_servicio(AlquilerEquipo, "Videobeam", 20000, 2)
+    asesoria = gestor.registrar_servicio(AsesoriaEspecializada, "Asesoria Cloud", 80000, "senior")
+    gestor.registrar_servicio(AsesoriaEspecializada, "Asesoria X", 80000, "dios")  # nivel invalido
+    gestor.registrar_servicio(ReservaSala, "Sala rota", -5, 10)                    # tarifa negativa
 
     print("\n8-12) Reservas")
-    r1 = g.crear_reserva(ana, sala, 3)
-    g.crear_reserva(luis, equipo, 4)
-    g.crear_reserva(ana, asesoria, 2)
-    g.crear_reserva(luis, sala, 0)                  # horas inválidas
-    g.crear_reserva(luis, sala, None)               # parámetro faltante
-    equipo.disponible = False
-    g.crear_reserva(ana, equipo, 1)                 # servicio no disponible
-    g.cancelar_reserva(r1)
-    g.cancelar_reserva(r1)                          # cancelar dos veces
-    print("\nDemostración de métodos sobrecargados:")
-    print("  simple:", asesoria.calcular_costo_simple(2),
-          "| con IVA:", asesoria.calcular_costo_con_iva(2),
-          "| IVA+10% desc:", asesoria.calcular_costo(2, impuesto=0.19, descuento=0.10))
+    reserva1 = gestor.crear_reserva(ana, sala, 3)
+    gestor.crear_reserva(luis, equipo, 4)
+    gestor.crear_reserva(ana, asesoria, 2)
+    gestor.crear_reserva(luis, sala, 0)       # horas invalidas
+    gestor.crear_reserva(luis, sala, None)    # falta parametro
+    equipo.set_disponible(False)
+    gestor.crear_reserva(ana, equipo, 1)      # servicio no disponible
+    gestor.cancelar_reserva(reserva1)
+    gestor.cancelar_reserva(reserva1)         # ya estaba cancelada
 
-    logger.info("=== Fin de la simulación (sistema estable) ===")
-    print(f"\nSimulación terminada. Revisa el log en: {RUTA_LOG}")
+    print("\nDemostracion de metodos sobrecargados:")
+    print("  simple:", asesoria.calcular_costo_simple(2))
+    print("  con IVA:", asesoria.calcular_costo_con_iva(2))
+    print("  IVA + 10% descuento:", asesoria.calcular_costo(2, 0.19, 0.10))
+
+    logger.info("=== Fin de la simulacion ===")
+    print("\nSimulacion terminada. Revisa el archivo logs/eventos.log")
 
 
-if __name__ == "__main__":
-    main()
+main()

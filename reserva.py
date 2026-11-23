@@ -1,43 +1,44 @@
-"""Clase Reserva: integra cliente, servicio, duración y estado."""
+# Clase Reserva: une un cliente, un servicio, las horas y el estado
 from entidades import Entidad, Cliente
 from servicios import Servicio
 from excepciones import (ReservaInvalidaError, OperacionNoPermitidaError,
                          ErrorSoftwareFJ)
-from logger import logger
+import logger
 
 
 class Reserva(Entidad):
-    PENDIENTE, CONFIRMADA, CANCELADA = "PENDIENTE", "CONFIRMADA", "CANCELADA"
-
     def __init__(self, cliente, servicio, horas):
         super().__init__()
         if not isinstance(cliente, Cliente) or not isinstance(servicio, Servicio):
-            raise ReservaInvalidaError("Cliente o servicio inválido")
-        self.cliente, self.servicio, self.horas = cliente, servicio, horas
-        self.estado = self.PENDIENTE
+            raise ReservaInvalidaError("Cliente o servicio invalido")
+        self.cliente = cliente
+        self.servicio = servicio
+        self.horas = horas
+        self.estado = "PENDIENTE"
         self.costo = None
 
     def confirmar(self):
-        if self.estado != self.PENDIENTE:
+        if self.estado != "PENDIENTE":
             raise OperacionNoPermitidaError(
-                f"No se puede confirmar una reserva {self.estado}")
+                "No se puede confirmar una reserva " + self.estado)
         try:
             self.costo = self.servicio.calcular_costo_con_iva(self.horas)
         except ErrorSoftwareFJ as e:
-            # encadenamiento de excepciones
+            # Encadenamiento de excepciones: "from e" guarda el error original
             raise ReservaInvalidaError("No se pudo confirmar la reserva") from e
         else:
-            self.estado = self.CONFIRMADA
-            logger.info(f"Reserva #{self.id} confirmada. Total ${self.costo}")
+            self.estado = "CONFIRMADA"
+            logger.info("Reserva #" + str(self._id) + " confirmada. Total $" + str(self.costo))
         finally:
-            logger.info(f"Intento de confirmación de reserva #{self.id} finalizado")
+            logger.info("Termino el intento de confirmar la reserva #" + str(self._id))
 
     def cancelar(self):
-        if self.estado == self.CANCELADA:
+        if self.estado == "CANCELADA":
             raise OperacionNoPermitidaError("La reserva ya estaba cancelada")
-        self.estado = self.CANCELADA
-        logger.info(f"Reserva #{self.id} cancelada")
+        self.estado = "CANCELADA"
+        logger.info("Reserva #" + str(self._id) + " cancelada")
 
     def describir(self):
-        return (f"Reserva #{self.id} | {self.cliente.nombre} | "
-                f"{self.servicio.nombre} | {self.horas}h | {self.estado} | ${self.costo}")
+        return ("Reserva #" + str(self._id) + " | " + self.cliente.get_nombre() +
+                " | " + self.servicio.get_nombre() + " | " + str(self.horas) +
+                "h | " + self.estado + " | $" + str(self.costo))
